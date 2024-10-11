@@ -1,0 +1,25 @@
+.footer {
+  display: flex;
+  justify-content: flex-start;
+  padding: 20px 60px;
+  background-color: #f5f5f5;
+}
+
+.poweredBy {
+  font-size: 12px;
+  color: #8C8CA1; 
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.poweredText {
+  color: #8C8CA1;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.brand {
+  font-weight: 500; 
+  color: #0E0E2C;
+  font-size: 18px; 
+}

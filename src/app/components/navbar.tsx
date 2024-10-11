@@ -1,8 +1,8 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock, faEye } from '@fortawesome/free-solid-svg-icons'; 
-import Logo from './Logo';
 import styles from '@/styles/components/navbar.module.scss';
+import Logo from './logo';
 
 const Navbar: React.FC = () => {
   return (

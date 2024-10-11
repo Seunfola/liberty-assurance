@@ -1,0 +1,26 @@
+.systemInfoContainer {
+  padding: 20px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #000;
+}
+
+.description {
+  font-size: 14px;
+  color: #4A4A68;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 20px;
+  }
+
+  .description {
+    font-size: 12px;
+  }
+}
