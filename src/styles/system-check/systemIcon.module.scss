@@ -1,13 +1,15 @@
 .systemIconsContainer {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row; /* Align icons and webcam preview side by side */
+  justify-content: space-between;
   align-items: flex-start;
+  gap: 40px;
+  width: 100%; /* Ensure full width is used */
 }
 
 .iconGrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, 1fr); /* 2 columns for icons */
   gap: 20px;
 }
 
@@ -21,44 +23,118 @@
   align-items: center;
   justify-content: center;
   text-align: center;
+  width: 150px; /* Adjust width to fit within the layout */
+
+  .iconCircle {
+    background-color: #E6E0FF;
+    padding: 10px;
+    border-radius: 50%;
+    height: 35px;
+    width: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .icon {
+      color: #755AE2;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  p {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #4A4A68;
+    font-weight: 400;
+  }
+
+  /* Initially hide the status dot */
+  .statusDot {
+    display: none; /* Hide by default */
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 16px;
+    height: 16px;
+    background-color: #755AE2;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .statusIcon {
+      width: 12px;
+      height: 12px;
+      color: white;
+    }
+  }
+
+  /* When the icon is clicked, show the status dot */
+  &.checked {
+    .iconCircle {
+      background-color: #A5D6A7; /* Green background when checked */
+      .icon {
+        color: #388E3C; /* Change main icon color when checked */
+      }
+    }
+
+    /* Show the status dot and the icon inside it */
+    .statusDot {
+      display: flex; /* Display the dot */
+      background-color: #E6E0FF; /* Adjust color to make it visible */
+      .statusIcon {
+        color: #755AE2; /* Change icon color inside dot */
+      }
+    }
+  }
 }
 
-.iconCircle {
-  background-color: #E6E0FF;
-  padding: 10px;
-  border-radius: 50%;
-  height: 35px;
-  width: 35px;
+/* Webcam preview container */
+.previewBox {
+  width: 400px;
+  height: 225px;
+  border: 2px solid #755AE2; /* Purple border */
+  border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: #F5F3FF; /* Light background */
 }
 
-.icon {
-  color: #755AE2;
-  width: 18px;
-  height: 18px;
+.videoPreview, .capturedImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures the image/video fills the box proportionally */
 }
 
-.iconCard p {
-  margin-top: 10px;
-  font-size: 10px;
-  color: #4A4A68;
-  font-weight: 400;
+/* Capture button */
+.captureButton {
+  margin-top: 20px; /* Space below the preview */
+  padding: 10px 20px;
+  background-color: #755AE2; /* Purple button */
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px; /* Larger font for visibility */
 }
 
-.statusDot {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 16px;
-  height: 16px;
-  background-color: #755AE2;
-  border-radius: 50%;
+.hiddenCanvas {
+  display: none;
 }
 
 @media (max-width: 768px) {
+  .systemIconsContainer {
+    flex-direction: column; /* Stack items vertically on small screens */
+  }
+
+  .previewBox {
+    width: 100%; /* Full width on small screens */
+    height: auto;
+  }
+
   .iconGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Stack icons vertically on smaller screens */
   }
 }
