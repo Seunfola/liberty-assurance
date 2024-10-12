@@ -1,29 +1,14 @@
-import React, { useState, useEffect } from 'react';
+'use client';
+import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock, faEye } from '@fortawesome/free-solid-svg-icons'; 
+import { faClock, faEye } from '@fortawesome/free-solid-svg-icons';
 import styles from '@/styles/components/navbar.module.scss';
 import Logo from './logo';
+import { useTimer } from "@/hook/timerContext";
 
-interface NavbarProps {
-  startTimer: boolean;  // Prop to control when to start the timer
-}
+const Navbar: React.FC = () => {
+  const { timeLeft } = useTimer();
 
-const Navbar: React.FC<NavbarProps> = ({ startTimer }) => {
-  const [timeLeft, setTimeLeft] = useState<number>(30 * 60); // 30 minutes in seconds
-
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (startTimer && timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    }
-
-    // Cleanup the timer when the component is unmounted or the time reaches 0
-    return () => clearInterval(timer);
-  }, [startTimer, timeLeft]);
-
-  // Format the time in MM:SS format
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;

@@ -1,0 +1,85 @@
+// Quiz Page Styles
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  background-color: #f9f9fb;
+}
+
+.title {
+  font-size: 2.5rem;
+  color: #755ae2;
+  margin-bottom: 20px;
+}
+
+.timer {
+  font-size: 1.2rem;
+  color: #4a4a68;
+  margin-bottom: 20px;
+}
+
+.questionCard {
+  width: 100%;
+  max-width: 600px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  padding: 20px;
+
+  h3 {
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    color: #4a4a68;
+  }
+
+  label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+
+    input {
+      margin-right: 10px;
+    }
+  }
+}
+
+.submitButton {
+  background-color: #755ae2;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #634dbf;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 2rem;
+  }
+
+  .questionCard {
+    padding: 15px;
+  }
+
+  .submitButton {
+    width: 100%;
+    padding: 10px;
+  }
+}
