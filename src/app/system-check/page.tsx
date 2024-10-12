@@ -5,11 +5,13 @@ import SystemInfo from './components/systemInfo';
 import SystemIcons from './components/systemIcons';
 import Modal from './components/modal';
 import toast, { Toaster } from 'react-hot-toast';
+import Navbar from './components/Navbar';  // Import the Navbar
 
 const SystemCheck: React.FC = () => {
   const systemIconsRef = useRef<{ captureImage: () => void }>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [allTestsCompleted, setAllTestsCompleted] = useState<boolean>(false); 
+  const [allTestsCompleted, setAllTestsCompleted] = useState<boolean>(false);
+  const [startTimer, setStartTimer] = useState<boolean>(false);  // State to start the timer
 
   const handleCaptureImage = () => {
     if (!allTestsCompleted) {
@@ -30,11 +32,15 @@ const SystemCheck: React.FC = () => {
   const handleProceed = () => {
     setIsModalOpen(false);
     console.log('Proceeding to start the assessment');
+    setStartTimer(true);  // Start the timer when the user clicks proceed
   };
 
   return (
     <div className={styles.systemCheckContainer}>
       <Toaster position="top-right" reverseOrder={false} />
+
+      {/* Include Navbar and pass the startTimer prop */}
+      <Navbar startTimer={startTimer} />
 
       <SystemInfo />
       <div className={styles.systemCheckLayout}>
