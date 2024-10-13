@@ -16,7 +16,7 @@ const QuizComponent = () => {
   };
 
   const handleSubmit = () => {
-    pauseTimer(); // Pause the timer on submission
+    pauseTimer(); 
 
     let score = 0;
     questions.forEach((question, index) => {
@@ -30,7 +30,7 @@ const QuizComponent = () => {
 
   useEffect(() => {
     if (timeLeft === 0) {
-      handleSubmit(); // Auto-submit when time runs out
+      handleSubmit(); 
     }
   }, [timeLeft]);
 
