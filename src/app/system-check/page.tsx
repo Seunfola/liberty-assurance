@@ -34,9 +34,8 @@ const SystemCheck: React.FC = () => {
   const handleProceed = () => {
     startTimer();
     setIsModalOpen(false);
-    console.log('Proceeding to start the assessment');
     router.push('/quiz');
-      };
+  };
 
   return (
     <div className={styles.systemCheckContainer}>
