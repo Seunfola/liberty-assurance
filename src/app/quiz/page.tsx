@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { questions, Question } from '@/data/question';
 import styles from '@/styles/quiz/page.module.scss';
@@ -7,7 +7,7 @@ import { useTimer } from '@/hook/timerContext';
 
 const QuizComponent = () => {
   const router = useRouter();
-  const { timeLeft, pauseTimer } = useTimer(); 
+  const { timeLeft, pauseTimer } = useTimer();
 
   const [userAnswers, setUserAnswers] = useState<{ [key: number]: keyof Question['options'] }>({});
 
@@ -15,8 +15,8 @@ const QuizComponent = () => {
     setUserAnswers({ ...userAnswers, [questionIndex]: selectedOption });
   };
 
-  const handleSubmit = () => {
-    pauseTimer(); 
+  const handleSubmit = useCallback(() => {
+    pauseTimer();
 
     let score = 0;
     questions.forEach((question, index) => {
@@ -26,13 +26,13 @@ const QuizComponent = () => {
     });
 
     router.push(`/result?score=${score}&totalQuestions=${questions.length}`);
-  };
+  }, [pauseTimer, router, userAnswers]);
 
   useEffect(() => {
     if (timeLeft === 0) {
       handleSubmit(); 
     }
-  }, [timeLeft]);
+  }, [timeLeft, handleSubmit]); 
 
   return (
     <div className={styles.container}>
