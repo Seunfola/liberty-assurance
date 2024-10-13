@@ -1,5 +1,3 @@
-// Quiz Page Styles
-
 .container {
   display: flex;
   flex-direction: column;
@@ -16,12 +14,6 @@
   margin-bottom: 20px;
 }
 
-.timer {
-  font-size: 1.2rem;
-  color: #4a4a68;
-  margin-bottom: 20px;
-}
-
 .questionCard {
   width: 100%;
   max-width: 600px;
@@ -34,7 +26,7 @@
   h3 {
     margin-bottom: 15px;
     font-size: 1.5rem;
-    color: #4a4a68;
+    color: #fff;
   }
 
   label {
