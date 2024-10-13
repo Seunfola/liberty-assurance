@@ -21,7 +21,8 @@ const SystemIcons = forwardRef(({ onAllTestsCompleted }: SystemIconsProps, ref) 
     microphone: false,
     lighting: false,
   });
-
+  
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null); 
 
@@ -32,12 +33,17 @@ const SystemIcons = forwardRef(({ onAllTestsCompleted }: SystemIconsProps, ref) 
         canvas.width = videoRef.current.videoWidth;
         canvas.height = videoRef.current.videoHeight;
         const context = canvas.getContext('2d');
+        
         if (context) {
           context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+          const imageData = canvas.toDataURL('image/png');
+          setCapturedImage(imageData); 
         }
+        
         console.log('Image captured.');
 
         streamRef.current.getTracks().forEach((track) => track.stop());
+        updateStatus('webcam');
       }
     },
   }));
@@ -60,7 +66,7 @@ const SystemIcons = forwardRef(({ onAllTestsCompleted }: SystemIconsProps, ref) 
         videoRef.current.srcObject = stream;
         videoRef.current.play();
       }
-      updateStatus('webcam');
+      console.log('Webcam activated');
     } catch {
       console.error('Error accessing webcam');
     }
@@ -96,7 +102,11 @@ const SystemIcons = forwardRef(({ onAllTestsCompleted }: SystemIconsProps, ref) 
   return (
     <div className={styles.systemIconsContainer}>
       <div className={styles.previewBox}>
-        <video ref={videoRef} className={styles.videoPreview} />
+        {capturedImage ? (
+          <img src={capturedImage} alt="Captured" className={styles.capturedImage} />
+        ) : (
+          <video ref={videoRef} className={styles.videoPreview} />
+        )}
       </div>
 
       <div className={styles.iconGrid}>
