@@ -2,121 +2,151 @@
 import React, { useState, useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
 import styles from '@/styles/system-check/systemIcon.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faVideo, faWifi, faMicrophone, faLightbulb, faCheckCircle } from '@fortawesome/free-solid-svg-icons'; 
+import { 
+  faVideo, 
+  faWifi, 
+  faMicrophone, 
+  faLightbulb, 
+  faCheckCircle 
+} from '@fortawesome/free-solid-svg-icons';
 
 interface SystemIconsProps {
   onAllTestsCompleted: (status: boolean) => void;
 }
 
 const SystemIcons = forwardRef(({ onAllTestsCompleted }: SystemIconsProps, ref) => {
-  const [webcamStatus, setWebcamStatus] = useState<boolean>(false);
-  const [wifiStatus, setWifiStatus] = useState<boolean>(false);
-  const [micStatus, setMicStatus] = useState<boolean>(false);
-  const [lightStatus, setLightStatus] = useState<boolean>(false);
-  const [imageCaptured, setImageCaptured] = useState<boolean>(false);
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [statuses, setStatuses] = useState({
+    webcam: false,
+    wifi: false,
+    microphone: false,
+    lighting: false,
+  });
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null); 
+
+  useImperativeHandle(ref, () => ({
+    captureImage: () => {
+      if (videoRef.current && streamRef.current) {
+        const canvas = document.createElement('canvas');
+        canvas.width = videoRef.current.videoWidth;
+        canvas.height = videoRef.current.videoHeight;
+        const context = canvas.getContext('2d');
+        if (context) {
+          context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        }
+        console.log('Image captured.');
+
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    },
+  }));
 
   useEffect(() => {
-    if (webcamStatus && wifiStatus && micStatus && lightStatus) {
-      onAllTestsCompleted(true);
-    } else {
-      onAllTestsCompleted(false);
-    }
-  }, [webcamStatus, wifiStatus, micStatus, lightStatus, onAllTestsCompleted]);
+    const allChecksPassed = Object.values(statuses).every((status) => status === true);
+    onAllTestsCompleted(allChecksPassed);
+  }, [statuses, onAllTestsCompleted]);
 
-  const checkWebcam = async (): Promise<void> => {
+  const updateStatus = (key: keyof typeof statuses) => {
+    setStatuses((prevStatuses) => ({ ...prevStatuses, [key]: true }));
+  };
+
+  const checkWebcam = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      streamRef.current = stream; 
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.play();
       }
-      setWebcamStatus(true);
-      setImageCaptured(false);
-    } catch (error) {
-      setWebcamStatus(false);
-      console.error('Error accessing webcam:', error);
+      updateStatus('webcam');
+    } catch {
+      console.error('Error accessing webcam');
     }
   };
 
-  const captureImage = (): void => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const context = canvas.getContext('2d');
-      if (context) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageDataUrl = canvas.toDataURL('image/png');
-        setImageSrc(imageDataUrl);
-        setImageCaptured(true);
-      }
-    }
+  const renderStatusDot = (key: keyof typeof statuses) => {
+    const status = statuses[key];
+    return status ? (
+      <FontAwesomeIcon
+        icon={getIcon(key)}
+        className={styles.statusIcon}
+      />
+    ) : (
+      <span className={styles.statusDot} />
+    );
   };
 
-  const checkWifi = (): void => setWifiStatus(true);
-
-  const checkMicrophone = async (): Promise<void> => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      setMicStatus(true);
-      stream.getTracks().forEach((track) => track.stop());
-    } catch (error) {
-      setMicStatus(false);
-      console.error('Error accessing microphone:', error);
+  const getIcon = (key: keyof typeof statuses) => {
+    switch (key) {
+      case 'webcam':
+        return faVideo;
+      case 'wifi':
+        return faWifi;
+      case 'microphone':
+        return faMicrophone;
+      case 'lighting':
+        return faLightbulb;
+      default:
+        return faCheckCircle;
     }
   };
-
-  const checkLighting = (): void => setLightStatus(true);
-
-  useImperativeHandle(ref, () => ({
-    captureImage,
-  }));
 
   return (
     <div className={styles.systemIconsContainer}>
       <div className={styles.previewBox}>
-        {imageCaptured && imageSrc ? (
-          <img src={imageSrc} alt="Captured" className={styles.capturedImage} />
-        ) : (
-          <video ref={videoRef} className={styles.videoPreview} />
-        )}
+        <video ref={videoRef} className={styles.videoPreview} />
       </div>
+
       <div className={styles.iconGrid}>
         <div className={styles.iconCard} onClick={checkWebcam}>
           <div className={styles.iconCircle}>
-            <FontAwesomeIcon icon={webcamStatus ? faCheckCircle : faVideo} className={styles.icon} />
+            <FontAwesomeIcon
+              icon={statuses.webcam ? faCheckCircle : faVideo}
+              className={styles.icon}
+            />
           </div>
+          <div className={styles.statusDotWrapper}>{renderStatusDot('webcam')}</div>
           <p>Webcam</p>
         </div>
-        <div className={styles.iconCard} onClick={checkWifi}>
+
+        <div className={styles.iconCard} onClick={() => updateStatus('wifi')}>
           <div className={styles.iconCircle}>
-            <FontAwesomeIcon icon={wifiStatus ? faCheckCircle : faWifi} className={styles.icon} />
+            <FontAwesomeIcon
+              icon={statuses.wifi ? faCheckCircle : faWifi}
+              className={styles.icon}
+            />
           </div>
-          <p>Speed</p>
+          <div className={styles.statusDotWrapper}>{renderStatusDot('wifi')}</div>
+          <p>Internet Speed</p>
         </div>
-        <div className={styles.iconCard} onClick={checkMicrophone}>
+
+        <div className={styles.iconCard} onClick={() => updateStatus('microphone')}>
           <div className={styles.iconCircle}>
-            <FontAwesomeIcon icon={micStatus ? faCheckCircle : faMicrophone} className={styles.icon} />
+            <FontAwesomeIcon
+              icon={statuses.microphone ? faCheckCircle : faMicrophone}
+              className={styles.icon}
+            />
           </div>
+          <div className={styles.statusDotWrapper}>{renderStatusDot('microphone')}</div>
           <p>Gadget Mic</p>
         </div>
-        <div className={styles.iconCard} onClick={checkLighting}>
+
+        <div className={styles.iconCard} onClick={() => updateStatus('lighting')}>
           <div className={styles.iconCircle}>
-            <FontAwesomeIcon icon={lightStatus ? faCheckCircle : faLightbulb} className={styles.icon} />
+            <FontAwesomeIcon
+              icon={statuses.lighting ? faCheckCircle : faLightbulb}
+              className={styles.icon}
+            />
           </div>
+          <div className={styles.statusDotWrapper}>{renderStatusDot('lighting')}</div>
           <p>Lighting</p>
         </div>
       </div>
-      <canvas ref={canvasRef} className={styles.hiddenCanvas}></canvas>
     </div>
   );
 });
 
 SystemIcons.displayName = 'SystemIcons';
-
 export default SystemIcons;

@@ -4,6 +4,7 @@ import { createContext, useContext } from 'react';
 export interface TimerContextType {
   timeLeft: number;
   startTimer: () => void;
+   pauseTimer: () => void;
 }
 
 export const TimerContext = createContext<TimerContextType | null>(null);

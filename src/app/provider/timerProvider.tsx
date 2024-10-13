@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, ReactNode } from 'react';
+import React, { useState, useEffect, ReactNode, useCallback } from 'react';
 import { TimerContext, TimerContextType } from '@/hook/timerContext';
 
 interface TimerProviderProps {
@@ -24,13 +24,18 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     };
   }, [isRunning, timeRemaining]);
 
-  const startTimer = () => {
+  const startTimer = useCallback(() => {
     if (!isRunning) setIsRunning(true);
-  };
+  }, [isRunning]);
+
+  const pauseTimer = useCallback(() => {
+    if (isRunning) setIsRunning(false);
+  }, [isRunning]);
 
   const contextValue: TimerContextType = {
     timeLeft: timeRemaining,
     startTimer,
+    pauseTimer, 
   };
 
   return (

@@ -1,13 +1,13 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { questions, Question } from '@/data/question';
 import styles from '@/styles/quiz/page.module.scss';
-import { useTimer } from '@/hook/timerContext'; 
+import { useTimer } from '@/hook/timerContext';
 
 const QuizComponent = () => {
   const router = useRouter();
-  const { timeLeft } = useTimer(); 
+  const { timeLeft, pauseTimer } = useTimer(); 
 
   const [userAnswers, setUserAnswers] = useState<{ [key: number]: keyof Question['options'] }>({});
 
@@ -16,6 +16,8 @@ const QuizComponent = () => {
   };
 
   const handleSubmit = () => {
+    pauseTimer(); // Pause the timer on submission
+
     let score = 0;
     questions.forEach((question, index) => {
       if (userAnswers[index] === question.correctAnswer) {
@@ -23,17 +25,14 @@ const QuizComponent = () => {
       }
     });
 
-    const queryParams = new URLSearchParams({
-      score: score.toString(),
-      totalQuestions: questions.length.toString(),
-    });
-
-    router.push(`/results?${queryParams.toString()}`);
+    router.push(`/result?score=${score}&totalQuestions=${questions.length}`);
   };
 
-  if (timeLeft === 0) {
-    handleSubmit(); 
-  }
+  useEffect(() => {
+    if (timeLeft === 0) {
+      handleSubmit(); // Auto-submit when time runs out
+    }
+  }, [timeLeft]);
 
   return (
     <div className={styles.container}>

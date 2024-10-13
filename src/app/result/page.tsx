@@ -1,38 +1,49 @@
-'use client'; 
-import { useRouter } from 'next/navigation';
+'use client';
+import { useSearchParams } from 'next/navigation';
+import Confetti from 'react-confetti';
 import { useEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; 
-
-import { faSpinner } from '@fortawesome/free-solid-svg-icons'; 
+import styles from '@/styles/result/page.module.scss';
 
 const ResultsPage = () => {
-  const router = useRouter();
-  const [score, setScore] = useState<number | null>(null);
-  const [totalQuestions, setTotalQuestions] = useState<number>(0);
-  
-  
-  useEffect(() => {
-    if (router.query.score && router.query.totalQuestions) {
-      setScore(parseInt(router.query.score as string, 10));
-      setTotalQuestions(parseInt(router.query.totalQuestions as string, 10));
-    }
-  }, [router.query]);
+  const searchParams = useSearchParams();
+  const score = parseInt(searchParams.get('score') || '0');
+  const totalQuestions = parseInt(searchParams.get('totalQuestions') || '0');
+  const [showConfetti, setShowConfetti] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>('');
 
-  return (
-    <div>
-      <h1>Quiz Results</h1>
-      {score !== null ? (
-        <h2>
-          Your Score: {score}/{totalQuestions}
-        </h2>
-      ) : (
-        <div>
-          <FontAwesomeIcon icon={faSpinner} spin size="2x" />
-          <p>Loading results...</p>
-        </div>
-      )}
+  const handleResultSetup = () => {
+    if (score >= 7) {
+      setShowConfetti(true); 
+      setMessage('Congratulations! 🎉 You did a great job!');
+
+      setTimeout(() => {
+        setShowConfetti(false);
+      }, 5000);
+    } else {
+      setMessage('Better luck next time! Keep practicing!');
+    }
+  };
+
+  useEffect(() => {
+    handleResultSetup();
+  }, [score]);
+
+  const renderInvalidResults = () => (
+    <p>No results available. Please complete the quiz.</p>
+  );
+
+  const renderResults = () => (
+    <div className={styles.container}>
+      {showConfetti && <Confetti />}
+      <h1 className={styles.title}>Quiz Results</h1>
+      <p className={styles.result}>
+        Your Score: {score} / {totalQuestions}
+      </p>
+      <p className={styles.message}>{message}</p>
     </div>
   );
+
+  return score && totalQuestions ? renderResults() : renderInvalidResults();
 };
 
 export default ResultsPage;

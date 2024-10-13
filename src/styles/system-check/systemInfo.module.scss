@@ -18,9 +18,11 @@
 @media (max-width: 768px) {
   .title {
     font-size: 20px;
+    text-align: center;
   }
 
   .description {
-    font-size: 12px;
+    font-size: 14px;
+    text-align: justify;
   }
 }

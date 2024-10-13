@@ -1,22 +1,23 @@
 .navbar {
   background-color: #FFFFFF;
-  padding: 20px 60px;
+  padding: 20px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 
   .navContent {
     display: flex;
-    flex-direction: row;
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    max-width: 1200px; 
   }
 
   .logoContainer {
     display: flex;
     align-items: center;
+    cursor: pointer;
   }
 
   .navText {
@@ -39,13 +40,16 @@
   .timeContainer {
     display: flex;
     align-items: center;
-    background-color: #EAEAFF;
-    padding: 5px 10px;
-    border-radius: 12px;
+
 
     .timer {
       display: flex;
       align-items: center;
+      background-color: #EAEAFF;
+      padding: 10px 20px;
+      border-radius: 12px;  
+
+
       p {
         color: #7F3DFF;
         font-weight: bold;
@@ -65,11 +69,14 @@
       border: none;
       margin-left: 15px;
       border-radius: 50%;
-      padding: 10px;
       cursor: pointer;
       display: flex;
       justify-content: center;
       align-items: center;
+      background-color: #EAEAFF;
+      padding: 10px 20px;
+      border-radius: 12px;  
+
 
       svg {
         color: #7F3DFF;
@@ -80,34 +87,48 @@
   }
 
   @media (max-width: 768px) {
-    .navContent {
-      flex-direction: column;
-      align-items: flex-start;
+    padding: 10px ;
+
+    .navText h1 {
+      font-size: 12px;
+    }
+
+    .navText p {
+      font-size: 10px;
     }
 
     .timeContainer {
-      margin-top: 10px;
-      justify-content: flex-end;
-      width: 100%;
+      padding: 5px;
+    }
+
+    .viewButton {
+      margin-left: 10px;
+      padding: 8px;
     }
   }
 
   @media (max-width: 480px) {
+    padding: 10px;
+
     .navText h1 {
-      font-size: 16px;
+      font-size: 12px;
     }
 
     .navText p {
-      font-size: 12px;
+      font-size: 10px;
     }
 
     .timeContainer p {
-      font-size: 12px;
+      font-size: 10px;
     }
 
-    svg {
+    .icon {
       width: 16px;
       height: 16px;
+    }
+
+    .viewButton {
+      padding: 5px;
     }
   }
 }
