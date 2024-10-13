@@ -1,11 +1,13 @@
 'use client';
-import React, { useState, useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
+
+import React, { useState, useRef, useImperativeHandle, forwardRef, useEffect, MutableRefObject } from 'react';
 import styles from '@/styles/system-check/systemIcon.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faVideo, faWifi, faMicrophone, faLightbulb, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 
 export interface SystemIconsRef {
   captureImage: () => void;
+  checkMicrophone: () => void;
 }
 
 interface SystemIconsProps {
@@ -23,49 +25,49 @@ const SystemIcons = forwardRef<SystemIconsRef, SystemIconsProps>(({ onAllTestsCo
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const microphoneStreamRef = useRef<MediaStream | null>(null);
   const [isWebcamActive, setIsWebcamActive] = useState<boolean>(false);
 
-  // Expose the `captureImage` method to parent components
+  // Use `useImperativeHandle` to expose methods to parent components
   useImperativeHandle(ref, () => ({
-    captureImage: () => {
-      if (videoRef.current && canvasRef.current) {
-        const video = videoRef.current;
-        const canvas = canvasRef.current;
-        const context = canvas.getContext('2d');
-
-        if (context) {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-          const imageData = canvas.toDataURL('image/png');
-          setCapturedImage(imageData);
-          console.log('Image captured.');
-
-          stopWebcam(); // Stop webcam after capturing the image
-          updateStatus('webcam');
-        }
-      }
-    },
+    captureImage: handleCaptureImage,
+    checkMicrophone: startMicrophoneTest,
   }));
-
-  useEffect(() => {
-    const allChecksPassed = Object.values(statuses).every((status) => status === true);
-    onAllTestsCompleted(allChecksPassed);
-  }, [statuses, onAllTestsCompleted]);
 
   const updateStatus = (key: keyof typeof statuses) => {
     setStatuses((prevStatuses) => ({ ...prevStatuses, [key]: true }));
   };
 
+  const handleCaptureImage = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+
+      if (context && video.videoWidth > 0 && video.videoHeight > 0) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const imageData = canvas.toDataURL('image/png');
+        setCapturedImage(imageData);
+        console.log('Image captured.');
+
+        stopWebcam();
+        updateStatus('webcam');
+      } else {
+        console.warn('Video not ready for capture.');
+      }
+    }
+  };
+
   const startWebcam = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      const video = videoRef.current;
-
-      if (video) {
-        video.srcObject = stream;
-        await video.play();
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
         setIsWebcamActive(true);
       }
     } catch (error) {
@@ -81,15 +83,52 @@ const SystemIcons = forwardRef<SystemIconsRef, SystemIconsProps>(({ onAllTestsCo
     }
   };
 
-  const handleWebcamClick = () => {
-  if (isWebcamActive) {
-    if (ref && typeof ref !== 'function') {
-      (ref as React.MutableRefObject<SystemIconsRef>).current?.captureImage();
+  const startMicrophoneTest = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      microphoneStreamRef.current = stream;
+      audioContextRef.current = new AudioContext();
+
+      const analyser = audioContextRef.current.createAnalyser();
+      const source = audioContextRef.current.createMediaStreamSource(stream);
+
+      source.connect(analyser);
+      analyser.fftSize = 256;
+
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+      const detectSound = () => {
+        analyser.getByteFrequencyData(dataArray);
+        const soundDetected = dataArray.some((value) => value > 50); // Arbitrary threshold
+
+        if (soundDetected) {
+          console.log('Microphone is working.');
+          updateStatus('microphone');
+          stopMicrophoneTest();
+        } else {
+          requestAnimationFrame(detectSound); // Continue checking
+        }
+      };
+
+      detectSound();
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
     }
-  } else {
-    startWebcam();
-  }
-};
+  };
+
+  const stopMicrophoneTest = () => {
+    microphoneStreamRef.current?.getTracks().forEach((track) => track.stop());
+    audioContextRef.current?.close();
+  };
+
+  const handleWebcamClick = async () => {
+    if (isWebcamActive) {
+      (ref as MutableRefObject<SystemIconsRef>).current?.captureImage();
+    } else {
+      await startWebcam();
+    }
+  };
+
   const renderStatusDot = (key: keyof typeof statuses) => (
     statuses[key] ? (
       <FontAwesomeIcon icon={getIcon(key)} className={styles.statusIcon} />
@@ -112,6 +151,11 @@ const SystemIcons = forwardRef<SystemIconsRef, SystemIconsProps>(({ onAllTestsCo
         return faCheckCircle;
     }
   };
+
+  useEffect(() => {
+    const allChecksPassed = Object.values(statuses).every((status) => status === true);
+    onAllTestsCompleted(allChecksPassed);
+  }, [statuses, onAllTestsCompleted]);
 
   return (
     <div className={styles.systemIconsContainer}>
@@ -141,7 +185,7 @@ const SystemIcons = forwardRef<SystemIconsRef, SystemIconsProps>(({ onAllTestsCo
           <p>Internet Speed</p>
         </div>
 
-        <div className={styles.iconCard} onClick={() => updateStatus('microphone')}>
+        <div className={styles.iconCard} onClick={() => (ref as MutableRefObject<SystemIconsRef>).current?.checkMicrophone()}>
           <div className={styles.iconCircle}>
             <FontAwesomeIcon icon={statuses.microphone ? faCheckCircle : faMicrophone} className={styles.icon} />
           </div>

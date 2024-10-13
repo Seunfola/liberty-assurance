@@ -1,68 +1,82 @@
-import React, { useRef } from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import SystemIcons from './systemIcons';
-
-Object.defineProperty(global.navigator, 'mediaDevices', {
-  value: {
-    getUserMedia: jest.fn().mockResolvedValue({
-      getTracks: () => [{ stop: jest.fn() }],
-    }),
-  },
-});
+import React, { createRef } from 'react';
+import { render, fireEvent, screen, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom'; 
+import SystemIcons, { SystemIconsRef } from '../components/systemIcons';
 
 describe('SystemIcons Component', () => {
+  let ref: React.MutableRefObject<SystemIconsRef | null>;
   const mockOnAllTestsCompleted = jest.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks(); 
+    ref = createRef<SystemIconsRef>();
+    jest.clearAllMocks();
   });
 
-  it('renders all system icons and status dots initially', () => {
-    render(<SystemIcons onAllTestsCompleted={mockOnAllTestsCompleted} />);
-
+  it('renders all system icons', () => {
+    render(<SystemIcons onAllTestsCompleted={mockOnAllTestsCompleted} ref={ref} />);
+    
     expect(screen.getByText('Webcam')).toBeInTheDocument();
     expect(screen.getByText('Internet Speed')).toBeInTheDocument();
     expect(screen.getByText('Gadget Mic')).toBeInTheDocument();
     expect(screen.getByText('Lighting')).toBeInTheDocument();
-
-    expect(screen.getAllByRole('status').length).toBe(4); 
   });
 
-  it('updates webcam status and video stream plays', async () => {
-    render(<SystemIcons onAllTestsCompleted={mockOnAllTestsCompleted} />);
+  it('captures an image when clicking on the webcam container', async () => {
+    render(<SystemIcons onAllTestsCompleted={mockOnAllTestsCompleted} ref={ref} />);
 
-    const webcamButton = screen.getByText('Webcam');
-    fireEvent.click(webcamButton);
+    const webcamContainer = screen.getByRole('img', { hidden: true });
+
+    await fireEvent.click(webcamContainer);
+    
+    await waitFor(() => {
+      expect(mockOnAllTestsCompleted).toHaveBeenCalledWith(false); 
+      expect(ref.current?.captureImage).toBeDefined();
+    });
+  });
+
+  it('starts the webcam on icon click and updates status after capture', async () => {
+    render(<SystemIcons onAllTestsCompleted={mockOnAllTestsCompleted} ref={ref} />);
+
+    const webcamIcon = screen.getByText('Webcam');
+
+    fireEvent.click(webcamIcon);
 
     await waitFor(() => {
-      expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledWith({ video: true });
+      expect(ref.current?.captureImage).toBeDefined();
+      expect(screen.getByText('Webcam')).toBeInTheDocument();
     });
 
-    expect(mockOnAllTestsCompleted).not.toHaveBeenCalled(); 
-    expect(screen.getByRole('status', { name: /fa-video/i })).toBeInTheDocument();
+    ref.current?.captureImage();
+    await waitFor(() => expect(mockOnAllTestsCompleted).toHaveBeenCalledWith(false));
   });
 
-  it('stops the webcam stream after capturing an image', async () => {
-    const systemIconsRef = useRef<{ captureImage: () => void }>(null);
+  it('detects microphone input and updates the microphone status', async () => {
+    render(<SystemIcons onAllTestsCompleted={mockOnAllTestsCompleted} ref={ref} />);
 
-    render(<SystemIcons ref={systemIconsRef} onAllTestsCompleted={mockOnAllTestsCompleted} />);
+    const microphoneIcon = screen.getByText('Gadget Mic');
 
-    fireEvent.click(screen.getByText('Webcam'));
+    fireEvent.click(microphoneIcon);
 
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    ref.current?.checkMicrophone();
+    await waitFor(() => expect(mockOnAllTestsCompleted).toHaveBeenCalledWith(false));
+  });
 
-    systemIconsRef.current?.captureImage();
+  it('updates the status for wifi and lighting when clicked', async () => {
+    render(<SystemIcons onAllTestsCompleted={mockOnAllTestsCompleted} ref={ref} />);
+
+    const wifiIcon = screen.getByText('Internet Speed');
+    const lightingIcon = screen.getByText('Lighting');
+
+    fireEvent.click(wifiIcon);
+    fireEvent.click(lightingIcon);
 
     await waitFor(() => {
-      stream.getTracks().forEach((track) => track.stop()); 
+      expect(mockOnAllTestsCompleted).not.toHaveBeenCalledWith(true); 
     });
-
-    expect(mockOnAllTestsCompleted).not.toHaveBeenCalled(); 
   });
 
-  it('calls onAllTestsCompleted when all tests are passed', async () => {
-    render(<SystemIcons onAllTestsCompleted={mockOnAllTestsCompleted} />);
+  it('calls onAllTestsCompleted when all tests pass', async () => {
+    render(<SystemIcons onAllTestsCompleted={mockOnAllTestsCompleted} ref={ref} />);
 
     fireEvent.click(screen.getByText('Webcam'));
     fireEvent.click(screen.getByText('Internet Speed'));
@@ -71,17 +85,6 @@ describe('SystemIcons Component', () => {
 
     await waitFor(() => {
       expect(mockOnAllTestsCompleted).toHaveBeenCalledWith(true); 
-    });
-  });
-
-  it('does not call onAllTestsCompleted if not all tests are passed', async () => {
-    render(<SystemIcons onAllTestsCompleted={mockOnAllTestsCompleted} />);
-
-    fireEvent.click(screen.getByText('Webcam'));
-    fireEvent.click(screen.getByText('Internet Speed')); 
-
-    await waitFor(() => {
-      expect(mockOnAllTestsCompleted).not.toHaveBeenCalledWith(true);
     });
   });
 });

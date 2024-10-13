@@ -1,15 +1,16 @@
 'use client';
+
 import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '@/styles/system-check/page.module.scss';
 import SystemInfo from './components/systemInfo';
-import SystemIcons from './components/systemIcons';
+import SystemIcons, { SystemIconsRef } from './components/systemIcons';
 import Modal from './components/modal';
 import { useTimer } from '@/hook/timerContext';
 import toast, { Toaster } from 'react-hot-toast';
 
 const SystemCheck: React.FC = () => {
-  const systemIconsRef = useRef<{ captureImage: () => void }>(null);
+  const systemIconsRef = useRef<SystemIconsRef>(null); 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [allTestsCompleted, setAllTestsCompleted] = useState<boolean>(false);
   const router = useRouter();
@@ -51,8 +52,8 @@ const SystemCheck: React.FC = () => {
         onClick={handleCaptureImage}
         disabled={!allTestsCompleted}
         style={{
-          opacity: allTestsCompleted ? 1 : 0.6, 
-          cursor: allTestsCompleted ? 'pointer' : 'not-allowed', 
+          opacity: allTestsCompleted ? 1 : 0.6,
+          cursor: allTestsCompleted ? 'pointer' : 'not-allowed',
         }}
       >
         Take picture and continue
