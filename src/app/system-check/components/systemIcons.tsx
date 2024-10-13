@@ -1,20 +1,14 @@
 'use client';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
 import styles from '@/styles/system-check/systemIcon.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faVideo, 
-  faWifi, 
-  faMicrophone, 
-  faLightbulb, 
-  faCheckCircle 
-} from '@fortawesome/free-solid-svg-icons';
+import { faVideo, faWifi, faMicrophone, faLightbulb, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 
 interface SystemIconsProps {
   onAllTestsCompleted: (status: boolean) => void;
 }
 
-const SystemIcons = React.forwardRef(({ onAllTestsCompleted }: SystemIconsProps, ref) => {
+const SystemIcons = forwardRef(({ onAllTestsCompleted }: SystemIconsProps, ref) => {
   const [statuses, setStatuses] = useState({
     webcam: false,
     wifi: false,
@@ -26,6 +20,26 @@ const SystemIcons = React.forwardRef(({ onAllTestsCompleted }: SystemIconsProps,
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  useImperativeHandle(ref, () => ({
+    captureImage: () => {
+      if (videoRef.current && canvasRef.current) {
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        const context = canvas.getContext('2d');
+
+        if (context) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          const imageData = canvas.toDataURL('image/png');
+          setCapturedImage(imageData);
+          console.log('Image captured.');
+        }
+      }
+    }
+  }));
+
   useEffect(() => {
     const allChecksPassed = Object.values(statuses).every((status) => status === true);
     onAllTestsCompleted(allChecksPassed);
@@ -35,7 +49,7 @@ const SystemIcons = React.forwardRef(({ onAllTestsCompleted }: SystemIconsProps,
     setStatuses((prevStatuses) => ({ ...prevStatuses, [key]: true }));
   };
 
-  const takePicture = async () => {
+  const startWebcam = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       const video = videoRef.current;
@@ -43,21 +57,6 @@ const SystemIcons = React.forwardRef(({ onAllTestsCompleted }: SystemIconsProps,
       if (video) {
         video.srcObject = stream;
         await video.play();
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        const canvas = canvasRef.current;
-        if (canvas) {
-          const context = canvas.getContext('2d');
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          context?.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-          const imageData = canvas.toDataURL('image/png');
-          setCapturedImage(imageData);
-        }
-
-        stream.getTracks().forEach((track) => track.stop());
-        updateStatus('webcam');
       }
     } catch (error) {
       console.error('Error accessing webcam:', error);
@@ -100,7 +99,7 @@ const SystemIcons = React.forwardRef(({ onAllTestsCompleted }: SystemIconsProps,
       </div>
 
       <div className={styles.iconGrid}>
-        <div className={styles.iconCard} onClick={takePicture}>
+        <div className={styles.iconCard} onClick={startWebcam}>
           <div className={styles.iconCircle}>
             <FontAwesomeIcon icon={statuses.webcam ? faCheckCircle : faVideo} className={styles.icon} />
           </div>
