@@ -14,7 +14,7 @@ interface SystemIconsProps {
   onAllTestsCompleted: (status: boolean) => void;
 }
 
-const SystemIcons = ({ onAllTestsCompleted }: SystemIconsProps) => {
+const SystemIcons = React.forwardRef(({ onAllTestsCompleted }: SystemIconsProps, ref) => {
   const [statuses, setStatuses] = useState({
     webcam: false,
     wifi: false,
@@ -43,11 +43,8 @@ const SystemIcons = ({ onAllTestsCompleted }: SystemIconsProps) => {
       if (video) {
         video.srcObject = stream;
         await video.play();
-
-        // Give the camera a moment to load
         await new Promise((resolve) => setTimeout(resolve, 500));
 
-        // Capture the image
         const canvas = canvasRef.current;
         if (canvas) {
           const context = canvas.getContext('2d');
@@ -57,10 +54,8 @@ const SystemIcons = ({ onAllTestsCompleted }: SystemIconsProps) => {
 
           const imageData = canvas.toDataURL('image/png');
           setCapturedImage(imageData);
-          console.log('Image captured.');
         }
 
-        // Stop the webcam
         stream.getTracks().forEach((track) => track.stop());
         updateStatus('webcam');
       }
@@ -139,7 +134,7 @@ const SystemIcons = ({ onAllTestsCompleted }: SystemIconsProps) => {
       </div>
     </div>
   );
-};
+});
 
 SystemIcons.displayName = 'SystemIcons';
 export default SystemIcons;
