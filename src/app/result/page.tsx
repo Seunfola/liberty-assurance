@@ -1,18 +1,18 @@
-'use client'; 
+'use client';
 
 import { useSearchParams } from 'next/navigation';
 import Confetti from 'react-confetti';
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import styles from '@/styles/result/page.module.scss';
 
 const ResultsPage = () => {
-  const searchParams = useSearchParams(); 
+  const searchParams = useSearchParams();
   const [score, setScore] = useState<number | null>(null);
   const [totalQuestions, setTotalQuestions] = useState<number | null>(null);
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
   const [message, setMessage] = useState<string>('');
 
-  const handleResultSetup = () => {
+  const handleResultSetup = useCallback(() => {
     if (score !== null && score >= 7) {
       setShowConfetti(true);
       setMessage('Congratulations! 🎉 You did a great job!');
@@ -23,7 +23,7 @@ const ResultsPage = () => {
     } else {
       setMessage('Better luck next time! Keep practicing!');
     }
-  };
+  }, [score]);
 
   useEffect(() => {
     const scoreParam = parseInt(searchParams.get('score') || '0', 10);
@@ -37,7 +37,7 @@ const ResultsPage = () => {
     if (score !== null) {
       handleResultSetup();
     }
-  }, [score]);
+  }, [score, handleResultSetup]); 
 
   if (score === null || totalQuestions === null) {
     return <p>No results available. Please complete the quiz.</p>;
