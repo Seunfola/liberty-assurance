@@ -4,6 +4,7 @@ import React, { useState, useRef, useImperativeHandle, forwardRef, useEffect, Mu
 import styles from '@/styles/system-check/systemIcon.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faVideo, faWifi, faMicrophone, faLightbulb, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import toast, { Toaster } from 'react-hot-toast'; 
 
 export interface SystemIconsRef {
   captureImage: () => void;
@@ -29,7 +30,6 @@ const SystemIcons = forwardRef<SystemIconsRef, SystemIconsProps>(({ onAllTestsCo
   const microphoneStreamRef = useRef<MediaStream | null>(null);
   const [isWebcamActive, setIsWebcamActive] = useState<boolean>(false);
 
-  // Use `useImperativeHandle` to expose methods to parent components
   useImperativeHandle(ref, () => ({
     captureImage: handleCaptureImage,
     checkMicrophone: startMicrophoneTest,
@@ -69,6 +69,8 @@ const SystemIcons = forwardRef<SystemIconsRef, SystemIconsProps>(({ onAllTestsCo
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
         setIsWebcamActive(true);
+
+        toast('Click on the image to save your picture.');
       }
     } catch (error) {
       console.error('Error accessing webcam:', error);
@@ -99,14 +101,14 @@ const SystemIcons = forwardRef<SystemIconsRef, SystemIconsProps>(({ onAllTestsCo
 
       const detectSound = () => {
         analyser.getByteFrequencyData(dataArray);
-        const soundDetected = dataArray.some((value) => value > 50); // Arbitrary threshold
+        const soundDetected = dataArray.some((value) => value > 50); 
 
         if (soundDetected) {
           console.log('Microphone is working.');
           updateStatus('microphone');
           stopMicrophoneTest();
         } else {
-          requestAnimationFrame(detectSound); // Continue checking
+          requestAnimationFrame(detectSound);
         }
       };
 
@@ -159,6 +161,7 @@ const SystemIcons = forwardRef<SystemIconsRef, SystemIconsProps>(({ onAllTestsCo
 
   return (
     <div className={styles.systemIconsContainer}>
+      <Toaster position="bottom-center" reverseOrder={false} /> 
       <div className={styles.previewBox} onClick={handleWebcamClick}>
         {capturedImage ? (
           <img src={capturedImage} alt="Captured" className={styles.capturedImage} />
