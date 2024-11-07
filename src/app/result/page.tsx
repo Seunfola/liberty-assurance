@@ -48,7 +48,7 @@ const ResultsPage = () => {
       {showConfetti && <Confetti />}
       <h1 className={styles.title}>Quiz Results</h1>
       <p className={styles.result}>
-        Your Score: {score} / {totalQuestions}
+        Your Result: {score} / {totalQuestions}
       </p>
       <p className={styles.message}>{message}</p>
     </div>
